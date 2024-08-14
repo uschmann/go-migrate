@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/uschmann/dbmigrate/migration"
+	"github.com/uschmann/go-migrate/migration"
 )
 
 func main() {
