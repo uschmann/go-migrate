@@ -3,9 +3,13 @@ package migration
 import (
 	"log"
 	"os"
-	"path"
-	"time"
 )
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
 
 type MigrationService struct {
 	migrationDir string
@@ -31,11 +35,4 @@ func (m *MigrationService) readDir() {
 	for _, entry := range entries {
 		log.Println(entry)
 	}
-}
-
-func (m *MigrationService) GenerateMigration(name string) {
-	timestamp := time.Now().Format("2006_01_02_150405_")
-
-	folderPath := path.Join(m.migrationDir, timestamp+name)
-	os.Mkdir(folderPath, os.ModePerm)
 }
