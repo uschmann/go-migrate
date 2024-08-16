@@ -11,6 +11,10 @@ import (
 // https://github.com/lucasjellema/go-oracle-database/blob/main/with-oracleinstant-client.go
 
 func main() {
+	migration.MakeMigrationService("./sql")
+}
+
+func main2() {
 	if len(os.Args) < 2 {
 		fmt.Println("Expected at least one command")
 		os.Exit(1)
@@ -30,6 +34,8 @@ func main() {
 		}
 
 		make(*makeName, *makeTable)
+	case "status":
+		fmt.Println("TBD: status")
 	}
 
 }

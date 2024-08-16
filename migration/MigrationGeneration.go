@@ -9,10 +9,10 @@ import (
 	"time"
 )
 
-//go:embed up.sql
+//go:embed templates/up.sql
 var upTemplate string
 
-//go:embed down.sql
+//go:embed templates/down.sql
 var downTemplate string
 
 func formatSqlTemplate(text string, name string) string {

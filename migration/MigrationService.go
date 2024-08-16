@@ -3,6 +3,8 @@ package migration
 import (
 	"log"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 func check(e error) {
@@ -13,6 +15,7 @@ func check(e error) {
 
 type MigrationService struct {
 	migrationDir string
+	migrations   []*Migration
 }
 
 func MakeMigrationService(dir string) *MigrationService {
@@ -32,7 +35,11 @@ func (m *MigrationService) readDir() {
 		log.Fatal(err)
 	}
 
-	for _, entry := range entries {
-		log.Println(entry)
+	absPath, _ := filepath.Abs(m.migrationDir)
+
+	for _, dir := range entries {
+		migration := MakeMigration(path.Join(absPath, dir.Name()))
+		m.migrations = append(m.migrations, migration)
 	}
+
 }
