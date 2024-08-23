@@ -11,7 +11,38 @@ import (
 // https://github.com/lucasjellema/go-oracle-database/blob/main/with-oracleinstant-client.go
 
 func main() {
-	migration.MakeMigrationService("./sql")
+	connection, err := migration.ConnectToDatabase()
+
+	if err != nil {
+		panic(err)
+	}
+
+	migrationLogRepository := *migration.NewMigrationLogRepository(connection)
+	_, err = migrationLogRepository.CreateMigrationLogsTable()
+
+	if err != nil {
+		panic(err)
+	}
+
+	batch, err := migrationLogRepository.GetHighestBatch()
+	if err != nil {
+		panic(err)
+	}
+	batch++
+
+	_, err = migrationLogRepository.AddMigrationLog("foo", batch)
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = migrationLogRepository.DeleteMigrationLogById(4)
+
+	if err != nil {
+		panic(err)
+	}
+
+	//migration.MakeMigrationService("./sql")
 }
 
 func main2() {
