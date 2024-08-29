@@ -5,9 +5,9 @@ import (
 )
 
 type MigrationLog struct {
-	id    int
-	name  string
-	batch int
+	Id    int
+	Name  string
+	Batch int
 }
 
 type MigrationLogRepository struct {
@@ -70,6 +70,31 @@ func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 	}
 
 	return batch, nil
+}
+
+func (m *MigrationLogRepository) GetAllMigrationLogs() ([]MigrationLog, error) {
+	rows, err := m.connection.Query("SELECT ID, NAME, BATCH FROM migration_logs")
+
+	if err != nil {
+		return nil, err
+	}
+
+	var migrationLogs []MigrationLog
+
+	for rows.Next() {
+		var log MigrationLog
+
+		if err := rows.Scan(&log.Id, &log.Name, &log.Batch); err != nil {
+			return migrationLogs, err
+		}
+		migrationLogs = append(migrationLogs, log)
+	}
+
+	if err = rows.Err(); err != nil {
+		return migrationLogs, err
+	}
+
+	return migrationLogs, nil
 }
 
 // TODO: Query all MigrationLogs

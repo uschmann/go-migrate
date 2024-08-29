@@ -42,6 +42,14 @@ func main() {
 		panic(err)
 	}
 
+	migrationLogs, err := migrationLogRepository.GetAllMigrationLogs()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(migrationLogs[0].Name)
+
 	//migration.MakeMigrationService("./sql")
 }
 
