@@ -32,3 +32,11 @@ func fileExists(filename string) bool {
 		return true
 	}
 }
+
+func (m *Migration) GetUpFilename() string {
+	return path.Join(m.directory, "up.sql")
+}
+
+func (m *Migration) GetDownFilename() string {
+	return path.Join(m.directory, "up.sql")
+}

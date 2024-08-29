@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -14,13 +15,15 @@ func check(e error) {
 }
 
 type MigrationService struct {
-	migrationDir string
-	migrations   []*Migration
+	migrationDir           string
+	migrations             []*Migration
+	migrationLogRepository *MigrationLogRepository
 }
 
-func MakeMigrationService(dir string) *MigrationService {
+func MakeMigrationService(dir string, migrationLogRepository *MigrationLogRepository) *MigrationService {
 	migrationService := &MigrationService{
-		migrationDir: dir,
+		migrationDir:           dir,
+		migrationLogRepository: migrationLogRepository,
 	}
 
 	migrationService.readDir()
@@ -42,4 +45,32 @@ func (m *MigrationService) readDir() {
 		m.migrations = append(m.migrations, migration)
 	}
 
+}
+
+func (m *MigrationService) Up() {
+	var migrationsToRun []*Migration
+
+	for _, migration := range m.migrations {
+		fmt.Println(migration.name)
+
+		isExecuted, err := m.migrationLogRepository.IsMigrationExecuted(migration.name)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if !isExecuted {
+			migrationsToRun = append(migrationsToRun, migration)
+		}
+	}
+
+	if len(migrationsToRun) == 0 {
+		fmt.Println("Nothing to migrate")
+	}
+
+	for _, migration := range migrationsToRun {
+		if migration.HasUp {
+			runSqlplus(migration.GetUpFilename())
+		}
+	}
 }

@@ -17,40 +17,10 @@ func main() {
 		panic(err)
 	}
 
-	migrationLogRepository := *migration.NewMigrationLogRepository(connection)
-	_, err = migrationLogRepository.CreateMigrationLogsTable()
+	migrationLogRepository := migration.NewMigrationLogRepository(connection)
+	migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
 
-	if err != nil {
-		panic(err)
-	}
-
-	batch, err := migrationLogRepository.GetHighestBatch()
-	if err != nil {
-		panic(err)
-	}
-	batch++
-
-	_, err = migrationLogRepository.AddMigrationLog("foo", batch)
-
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = migrationLogRepository.DeleteMigrationLogById(4)
-
-	if err != nil {
-		panic(err)
-	}
-
-	migrationLogs, err := migrationLogRepository.GetAllMigrationLogs()
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(migrationLogs[0].Name)
-
-	//migration.MakeMigrationService("./sql")
+	migrationService.Up()
 }
 
 func main2() {

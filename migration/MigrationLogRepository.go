@@ -73,7 +73,7 @@ func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 }
 
 func (m *MigrationLogRepository) GetAllMigrationLogs() ([]MigrationLog, error) {
-	rows, err := m.connection.Query("SELECT ID, NAME, BATCH FROM migration_logs")
+	rows, err := m.connection.Query("SELECT ID, NAME, BATCH FROM migration_logs ORDER BY NAME ASC, BATCH ASC")
 
 	if err != nil {
 		return nil, err
@@ -95,6 +95,17 @@ func (m *MigrationLogRepository) GetAllMigrationLogs() ([]MigrationLog, error) {
 	}
 
 	return migrationLogs, nil
+}
+
+func (m *MigrationLogRepository) IsMigrationExecuted(name string) (bool, error) {
+	var count int
+	err := m.connection.QueryRow("select count(*) from migration_logs where name = :1", name).Scan(&count)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 // TODO: Query all MigrationLogs
