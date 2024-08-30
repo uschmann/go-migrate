@@ -63,7 +63,7 @@ func (m *MigrationLogRepository) DeleteMigrationLogById(id int) (sql.Result, err
 
 func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 	var batch int
-	err := m.connection.QueryRow("select max(batch) from migration_logs").Scan(&batch)
+	err := m.connection.QueryRow("select nvl(max(batch), 0) from migration_logs").Scan(&batch)
 
 	if err != nil {
 		return -1, err
@@ -106,6 +106,34 @@ func (m *MigrationLogRepository) IsMigrationExecuted(name string) (bool, error) 
 	}
 
 	return count > 0, nil
+}
+
+func (m *MigrationLogRepository) GetMigrationLogsToRollback() ([]string, error) {
+	batch, err := m.GetHighestBatch()
+	check(err)
+
+	rows, err := m.connection.Query("SELECT NAME FROM migration_logs WHERE BATCH = :1 ORDER BY NAME DESC", batch)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var migrations []string
+
+	for rows.Next() {
+		var name string
+
+		if err := rows.Scan(&name); err != nil {
+			return migrations, err
+		}
+		migrations = append(migrations, name)
+	}
+
+	if err = rows.Err(); err != nil {
+		return migrations, err
+	}
+
+	return migrations, nil
 }
 
 // TODO: Query all MigrationLogs

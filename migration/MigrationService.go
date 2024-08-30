@@ -62,9 +62,33 @@ func (m *MigrationService) Up() {
 		fmt.Println("Nothing to migrate")
 	}
 
+	batch, err := m.migrationLogRepository.GetHighestBatch()
+	check(err)
+	batch++
+
 	for _, migration := range migrationsToRun {
 		if migration.HasUp {
-			runSqlplus(migration.GetUpFilename())
+			tempDir := copyMigrationToTemp(migration)
+
+			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
+
+			if err != nil {
+				fmt.Println(stdout)
+				panic(err)
+			}
+
+			m.migrationLogRepository.AddMigrationLog(migration.name, batch)
 		}
 	}
+}
+
+func (m *MigrationService) Down() {
+	migrationNames, err := m.migrationLogRepository.GetMigrationLogsToRollback()
+	check(err)
+
+	for _, name := range migrationNames {
+		fmt.Println(name)
+	}
+
+	return
 }

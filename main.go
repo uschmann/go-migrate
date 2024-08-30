@@ -11,25 +11,32 @@ import (
 // https://github.com/lucasjellema/go-oracle-database/blob/main/with-oracleinstant-client.go
 
 func main() {
-	connection, err := migration.ConnectToDatabase()
-
-	if err != nil {
-		panic(err)
-	}
-
-	migrationLogRepository := migration.NewMigrationLogRepository(connection)
-	migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
-
-	migrationService.Up()
-}
-
-func main2() {
 	if len(os.Args) < 2 {
 		fmt.Println("Expected at least one command")
 		os.Exit(1)
 	}
 
 	switch os.Args[1] {
+	case "up":
+		connection, err := migration.ConnectToDatabase()
+		if err != nil {
+			panic(err)
+		}
+
+		migrationLogRepository := migration.NewMigrationLogRepository(connection)
+		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
+
+		migrationService.Up()
+	case "down":
+		connection, err := migration.ConnectToDatabase()
+		if err != nil {
+			panic(err)
+		}
+
+		migrationLogRepository := migration.NewMigrationLogRepository(connection)
+		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
+
+		migrationService.Down()
 	case "make":
 		makeCmd := flag.NewFlagSet("make", flag.ExitOnError)
 		makeName := makeCmd.String("n", "", "The migration name")

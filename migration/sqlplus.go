@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	gorecurcopy "github.com/uschmann/go-migrate/utils"
 )
 
 //go:embed templates/wrapper.sql
@@ -17,8 +19,6 @@ func execute(wrapper string, script string) (string, string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	fmt.Println()
-
 	cmd := exec.Command("sqlplus", "auschmann/secret@localhost:1522/FREE", "@"+wrapper, script)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -26,29 +26,28 @@ func execute(wrapper string, script string) (string, string, error) {
 	return stdout.String(), stderr.String(), err
 }
 
-func runSqlplus(script string) {
+func copyMigrationToTemp(migration *Migration) string {
 	tempDir, err := os.MkdirTemp("", "db-migrate")
 	check(err)
 	//defer os.RemoveAll(tempDir)
+
+	err = gorecurcopy.CopyDirectory(migration.directory, tempDir)
+	check(err)
 
 	// Write wrapper to temp directory
 	tempWrapper := filepath.Join(tempDir, "wrapper.sql")
 	err = os.WriteFile(tempWrapper, []byte(wrapperScript), 0644)
 	check(err)
 
-	// Copy the script to the temp directory
-	tempScript := filepath.Join(tempDir, "script.sql")
-	_, err = copyFile(script, tempScript)
-	check(err)
+	return tempDir
+}
 
+func runSqlplus(wrapper string, script string) {
 	// Run sqlplus
-	stdout, _, err := execute(tempWrapper, tempScript)
-
-	check(err)
+	stdout, _, err := execute(wrapper, script)
 
 	fmt.Println(stdout)
-
-	fmt.Println(tempDir)
+	check(err)
 }
 
 func copyFile(src, dst string) (int64, error) {
