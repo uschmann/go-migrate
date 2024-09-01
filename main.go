@@ -58,8 +58,16 @@ func main() {
 		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
 
 		migrationStatus := migrationService.GetMigrationStatus()
-		fmt.Println(len(migrationStatus))
-		return
+
+		fmt.Println("#\tName\t\t\t\t\tExecuted?\tBatch")
+		for _, status := range migrationStatus {
+			isExecuted := "No"
+			if status.IsExecuted {
+				isExecuted = "Yes"
+			}
+
+			fmt.Println("#", status.Index, "\t"+status.Migration.Name+"\t", isExecuted, "\t\t", status.Batch)
+		}
 	}
 
 }

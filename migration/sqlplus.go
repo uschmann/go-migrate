@@ -29,7 +29,6 @@ func execute(wrapper string, script string) (string, string, error) {
 func copyMigrationToTemp(migration *Migration) string {
 	tempDir, err := os.MkdirTemp("", "db-migrate")
 	check(err)
-	//defer os.RemoveAll(tempDir)
 
 	err = gorecurcopy.CopyDirectory(migration.directory, tempDir)
 	check(err)

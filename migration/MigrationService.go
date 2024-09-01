@@ -39,7 +39,7 @@ func (m *MigrationService) readDir() {
 	for _, dir := range entries {
 		migration := MakeMigration(path.Join(absPath, dir.Name()))
 		m.migrations = append(m.migrations, migration)
-		m.migrationsByName[migration.name] = migration
+		m.migrationsByName[migration.Name] = migration
 	}
 }
 
@@ -52,7 +52,7 @@ func (m *MigrationService) Up() {
 
 	for _, migration := range m.migrations {
 
-		isExecuted, err := m.migrationLogRepository.IsMigrationExecuted(migration.name)
+		isExecuted, err := m.migrationLogRepository.IsMigrationExecuted(migration.Name)
 
 		if err != nil {
 			panic(err)
@@ -73,18 +73,21 @@ func (m *MigrationService) Up() {
 
 	for _, migration := range migrationsToRun {
 		if migration.HasUp {
-			fmt.Println("Migrating " + migration.name)
+			fmt.Println("Migrating " + migration.Name)
 
 			tempDir := copyMigrationToTemp(migration)
+			//defer os.RemoveAll(tempDir)
 
-			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
+			stdout, stderr, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
 
 			if err != nil {
 				fmt.Println(stdout)
+				fmt.Println(stderr)
+				fmt.Println(tempDir)
 				panic(err)
 			}
 
-			m.migrationLogRepository.AddMigrationLog(migration.name, batch)
+			m.migrationLogRepository.AddMigrationLog(migration.Name, batch)
 		}
 	}
 }
@@ -101,7 +104,7 @@ func (m *MigrationService) Down() {
 		migration := m.getMigrationByName(name)
 
 		if migration.HasDown {
-			fmt.Println("Rolling back " + migration.name)
+			fmt.Println("Rolling back " + migration.Name)
 
 			tempDir := copyMigrationToTemp(migration)
 
@@ -137,7 +140,7 @@ func (m *MigrationService) GetMigrationStatus() []MigrationStatus {
 	}
 
 	for index, migration := range m.migrations {
-		migrationLog, ok := mappedMigrationLogs[migration.name]
+		migrationLog, ok := mappedMigrationLogs[migration.Name]
 		batch := 0
 		isExecuted := false
 

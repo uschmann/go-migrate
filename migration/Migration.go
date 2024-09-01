@@ -8,7 +8,7 @@ import (
 )
 
 type Migration struct {
-	name      string
+	Name      string
 	directory string
 	HasUp     bool
 	HasDown   bool
@@ -16,7 +16,7 @@ type Migration struct {
 
 func MakeMigration(dir string) *Migration {
 	migration := &Migration{
-		name:      filepath.Base(dir),
+		Name:      filepath.Base(dir),
 		directory: dir,
 		HasUp:     fileExists(path.Join(dir, "up.sql")),
 		HasDown:   fileExists(path.Join(dir, "down.sql")),
