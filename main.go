@@ -8,8 +8,6 @@ import (
 	"github.com/uschmann/go-migrate/migration"
 )
 
-// https://github.com/lucasjellema/go-oracle-database/blob/main/with-oracleinstant-client.go
-
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Expected at least one command")
@@ -51,7 +49,17 @@ func main() {
 
 		make(*makeName, *makeTable)
 	case "status":
-		fmt.Println("TBD: status")
+		connection, err := migration.ConnectToDatabase()
+		if err != nil {
+			panic(err)
+		}
+
+		migrationLogRepository := migration.NewMigrationLogRepository(connection)
+		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
+
+		migrationStatus := migrationService.GetMigrationStatus()
+		fmt.Println(len(migrationStatus))
+		return
 	}
 
 }

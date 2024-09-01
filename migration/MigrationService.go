@@ -73,6 +73,8 @@ func (m *MigrationService) Up() {
 
 	for _, migration := range migrationsToRun {
 		if migration.HasUp {
+			fmt.Println("Migrating " + migration.name)
+
 			tempDir := copyMigrationToTemp(migration)
 
 			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
@@ -91,10 +93,16 @@ func (m *MigrationService) Down() {
 	migrationNames, err := m.migrationLogRepository.GetMigrationLogsToRollback()
 	check(err)
 
+	if len(migrationNames) == 0 {
+		fmt.Println("Nothing to rollback")
+	}
+
 	for _, name := range migrationNames {
 		migration := m.getMigrationByName(name)
 
 		if migration.HasDown {
+			fmt.Println("Rolling back " + migration.name)
+
 			tempDir := copyMigrationToTemp(migration)
 
 			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "down.sql"))
@@ -109,4 +117,42 @@ func (m *MigrationService) Down() {
 	}
 
 	return
+}
+
+type MigrationStatus struct {
+	Migration  *Migration
+	IsExecuted bool
+	Index      int
+	Batch      int
+}
+
+func (m *MigrationService) GetMigrationStatus() []MigrationStatus {
+	migrationStatus := make([]MigrationStatus, 0)
+	migrationLogs, err := m.migrationLogRepository.GetAllMigrationLogs()
+	check(err)
+
+	mappedMigrationLogs := make(map[string]MigrationLog)
+	for _, migrationLog := range migrationLogs {
+		mappedMigrationLogs[migrationLog.Name] = migrationLog
+	}
+
+	for index, migration := range m.migrations {
+		migrationLog, ok := mappedMigrationLogs[migration.name]
+		batch := 0
+		isExecuted := false
+
+		if ok {
+			batch = migrationLog.Batch
+			isExecuted = true
+		}
+
+		migrationStatus = append(migrationStatus, MigrationStatus{
+			Migration:  migration,
+			IsExecuted: isExecuted,
+			Index:      index + 1,
+			Batch:      batch,
+		})
+	}
+
+	return migrationStatus
 }
