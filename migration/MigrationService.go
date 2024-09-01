@@ -11,6 +11,7 @@ import (
 type MigrationService struct {
 	migrationDir           string
 	migrations             []*Migration
+	migrationsByName       map[string]*Migration
 	migrationLogRepository *MigrationLogRepository
 }
 
@@ -18,6 +19,7 @@ func MakeMigrationService(dir string, migrationLogRepository *MigrationLogReposi
 	migrationService := &MigrationService{
 		migrationDir:           dir,
 		migrationLogRepository: migrationLogRepository,
+		migrationsByName:       make(map[string]*Migration),
 	}
 
 	migrationService.readDir()
@@ -37,15 +39,18 @@ func (m *MigrationService) readDir() {
 	for _, dir := range entries {
 		migration := MakeMigration(path.Join(absPath, dir.Name()))
 		m.migrations = append(m.migrations, migration)
+		m.migrationsByName[migration.name] = migration
 	}
+}
 
+func (m *MigrationService) getMigrationByName(name string) *Migration {
+	return m.migrationsByName[name]
 }
 
 func (m *MigrationService) Up() {
 	var migrationsToRun []*Migration
 
 	for _, migration := range m.migrations {
-		fmt.Println(migration.name)
 
 		isExecuted, err := m.migrationLogRepository.IsMigrationExecuted(migration.name)
 
@@ -87,7 +92,20 @@ func (m *MigrationService) Down() {
 	check(err)
 
 	for _, name := range migrationNames {
-		fmt.Println(name)
+		migration := m.getMigrationByName(name)
+
+		if migration.HasDown {
+			tempDir := copyMigrationToTemp(migration)
+
+			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "down.sql"))
+
+			if err != nil {
+				fmt.Println(stdout)
+				panic(err)
+			}
+
+			m.migrationLogRepository.DeleteMigrationLogByName(name)
+		}
 	}
 
 	return

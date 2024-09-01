@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "main.go",
-            "args": ["up"]
+            "args": ["migrate"]
         },
         {
             "name": "Launch down",
@@ -18,7 +18,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "main.go",
-            "args": ["down"]
+            "args": ["rollback"]
         }
     ]
 }

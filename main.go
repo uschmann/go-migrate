@@ -17,7 +17,7 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	case "up":
+	case "migrate":
 		connection, err := migration.ConnectToDatabase()
 		if err != nil {
 			panic(err)
@@ -27,7 +27,7 @@ func main() {
 		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
 
 		migrationService.Up()
-	case "down":
+	case "rollback":
 		connection, err := migration.ConnectToDatabase()
 		if err != nil {
 			panic(err)

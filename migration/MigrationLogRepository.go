@@ -61,6 +61,10 @@ func (m *MigrationLogRepository) DeleteMigrationLogById(id int) (sql.Result, err
 	return m.connection.Exec("delete from migration_logs where id = :1", id)
 }
 
+func (m *MigrationLogRepository) DeleteMigrationLogByName(name string) (sql.Result, error) {
+	return m.connection.Exec("delete from migration_logs where name = :1", name)
+}
+
 func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 	var batch int
 	err := m.connection.QueryRow("select nvl(max(batch), 0) from migration_logs").Scan(&batch)
