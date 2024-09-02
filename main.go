@@ -31,13 +31,14 @@ func main() {
 				Name:  "status",
 				Usage: "List pending and executed migrations",
 				Action: func(ctx *cli.Context) error {
-					connection, err := migration.ConnectToDatabase()
+					config := migration.MakeConfig()
+					connection, err := migration.ConnectToDatabase(config)
 					if err != nil {
 						panic(err)
 					}
 
 					migrationLogRepository := migration.NewMigrationLogRepository(connection)
-					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationStatus := migrationService.GetMigrationStatus()
 
@@ -57,13 +58,14 @@ func main() {
 				Name:  "migrate",
 				Usage: "Execute all pending migrations",
 				Action: func(ctx *cli.Context) error {
-					connection, err := migration.ConnectToDatabase()
+					config := migration.MakeConfig()
+					connection, err := migration.ConnectToDatabase(config)
 					if err != nil {
 						panic(err)
 					}
 
 					migrationLogRepository := migration.NewMigrationLogRepository(connection)
-					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationService.Up()
 
@@ -74,13 +76,14 @@ func main() {
 				Name:  "rollback",
 				Usage: "Rollback the last batch of migrations",
 				Action: func(ctx *cli.Context) error {
-					connection, err := migration.ConnectToDatabase()
+					config := migration.MakeConfig()
+					connection, err := migration.ConnectToDatabase(config)
 					if err != nil {
 						panic(err)
 					}
 
 					migrationLogRepository := migration.NewMigrationLogRepository(connection)
-					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationService.Down()
 

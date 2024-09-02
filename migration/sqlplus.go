@@ -15,11 +15,12 @@ import (
 //go:embed templates/wrapper.sql
 var wrapperScript string
 
-func execute(wrapper string, script string) (string, string, error) {
+func execute(config *Config, wrapper string, script string) (string, string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	cmd := exec.Command("sqlplus", "auschmann/secret@localhost:1522/FREE", "@"+wrapper, script)
+	connectionString := config.Database.BuildSqlplusConnectionString()
+	cmd := exec.Command("sqlplus", connectionString, "@"+wrapper, script)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -39,14 +40,6 @@ func copyMigrationToTemp(migration *Migration) string {
 	check(err)
 
 	return tempDir
-}
-
-func runSqlplus(wrapper string, script string) {
-	// Run sqlplus
-	stdout, _, err := execute(wrapper, script)
-
-	fmt.Println(stdout)
-	check(err)
 }
 
 func copyFile(src, dst string) (int64, error) {

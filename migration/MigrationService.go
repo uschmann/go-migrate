@@ -13,13 +13,15 @@ type MigrationService struct {
 	migrations             []*Migration
 	migrationsByName       map[string]*Migration
 	migrationLogRepository *MigrationLogRepository
+	config                 *Config
 }
 
-func MakeMigrationService(dir string, migrationLogRepository *MigrationLogRepository) *MigrationService {
+func MakeMigrationService(dir string, config *Config, migrationLogRepository *MigrationLogRepository) *MigrationService {
 	migrationService := &MigrationService{
 		migrationDir:           dir,
 		migrationLogRepository: migrationLogRepository,
 		migrationsByName:       make(map[string]*Migration),
+		config:                 config,
 	}
 
 	migrationService.readDir()
@@ -78,7 +80,7 @@ func (m *MigrationService) Up() {
 			tempDir := copyMigrationToTemp(migration)
 			//defer os.RemoveAll(tempDir)
 
-			stdout, stderr, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
+			stdout, stderr, err := execute(m.config, path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
 
 			if err != nil {
 				fmt.Println(stdout)
@@ -108,7 +110,7 @@ func (m *MigrationService) Down() {
 
 			tempDir := copyMigrationToTemp(migration)
 
-			stdout, _, err := execute(path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "down.sql"))
+			stdout, _, err := execute(m.config, path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "down.sql"))
 
 			if err != nil {
 				fmt.Println(stdout)
