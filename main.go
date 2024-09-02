@@ -1,88 +1,130 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/urfave/cli/v2"
 	"github.com/uschmann/go-migrate/migration"
 )
 
+const DEFAULT_MIGRATION_DIR string = "./sql"
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Expected at least one command")
-		os.Exit(1)
+	var directory string
+
+	app := &cli.App{
+		Name:  "dbmigrate",
+		Usage: "Create and execute migrations for oracle db",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "dir",
+				Value:       DEFAULT_MIGRATION_DIR,
+				Aliases:     []string{"d"},
+				Usage:       "Path to the folder that contains the migrations",
+				Destination: &directory,
+			},
+		},
+
+		Commands: []*cli.Command{
+			{
+				Name:  "status",
+				Usage: "List pending and executed migrations",
+				Action: func(ctx *cli.Context) error {
+					connection, err := migration.ConnectToDatabase()
+					if err != nil {
+						panic(err)
+					}
+
+					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+
+					migrationStatus := migrationService.GetMigrationStatus()
+
+					fmt.Println("\tName\t\t\t\t\t\tExecuted?\tBatch")
+					for _, status := range migrationStatus {
+						isExecuted := "No"
+						if status.IsExecuted {
+							isExecuted = "Yes"
+						}
+
+						fmt.Println(status.Index, "\t"+status.Migration.Name+"\t\t", isExecuted, "\t\t", status.Batch)
+					}
+					return nil
+				},
+			},
+			{
+				Name:  "migrate",
+				Usage: "Execute all pending migrations",
+				Action: func(ctx *cli.Context) error {
+					connection, err := migration.ConnectToDatabase()
+					if err != nil {
+						panic(err)
+					}
+
+					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+
+					migrationService.Up()
+
+					return nil
+				},
+			},
+			{
+				Name:  "rollback",
+				Usage: "Rollback the last batch of migrations",
+				Action: func(ctx *cli.Context) error {
+					connection, err := migration.ConnectToDatabase()
+					if err != nil {
+						panic(err)
+					}
+
+					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationService := migration.MakeMigrationService(directory, migrationLogRepository)
+
+					migrationService.Down()
+
+					return nil
+				},
+			},
+			{
+				Name:  "make",
+				Usage: "Create a new migration",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "name",
+						Aliases:  []string{"n"},
+						Usage:    "The name of the new migration",
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:    "table",
+						Value:   "",
+						Aliases: []string{"t"},
+						Usage:   "Generate boilerplate code for the given table name",
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					var folder string
+					name := ctx.String("name")
+					table := ctx.String("table")
+
+					if table == "" {
+						folder = migration.GenerateMigration(directory, name)
+					} else {
+						folder = migration.GenerateMigrationWithTemplate(directory, name, table)
+					}
+
+					fmt.Println("Created new migration in", folder)
+
+					return nil
+				},
+			},
+		},
 	}
 
-	switch os.Args[1] {
-	case "migrate":
-		connection, err := migration.ConnectToDatabase()
-		if err != nil {
-			panic(err)
-		}
-
-		migrationLogRepository := migration.NewMigrationLogRepository(connection)
-		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
-
-		migrationService.Up()
-	case "rollback":
-		connection, err := migration.ConnectToDatabase()
-		if err != nil {
-			panic(err)
-		}
-
-		migrationLogRepository := migration.NewMigrationLogRepository(connection)
-		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
-
-		migrationService.Down()
-	case "make":
-		makeCmd := flag.NewFlagSet("make", flag.ExitOnError)
-		makeName := makeCmd.String("n", "", "The migration name")
-		makeTable := makeCmd.String("t", "", "Specify an optional table name")
-
-		makeCmd.Parse(os.Args[2:])
-
-		if *makeName == "" {
-			printMakeHelp()
-			os.Exit(1)
-		}
-
-		make(*makeName, *makeTable)
-	case "status":
-		connection, err := migration.ConnectToDatabase()
-		if err != nil {
-			panic(err)
-		}
-
-		migrationLogRepository := migration.NewMigrationLogRepository(connection)
-		migrationService := migration.MakeMigrationService("./sql", migrationLogRepository)
-
-		migrationStatus := migrationService.GetMigrationStatus()
-
-		fmt.Println("#\tName\t\t\t\t\tExecuted?\tBatch")
-		for _, status := range migrationStatus {
-			isExecuted := "No"
-			if status.IsExecuted {
-				isExecuted = "Yes"
-			}
-
-			fmt.Println("#", status.Index, "\t"+status.Migration.Name+"\t", isExecuted, "\t\t", status.Batch)
-		}
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
-
-}
-
-func make(name string, table string) {
-	dir := "./sql"
-
-	if table == "" {
-		migration.GenerateMigration(dir, name)
-	} else {
-		migration.GenerateMigrationWithTemplate(dir, name, table)
-	}
-
-}
-
-func printMakeHelp() {
-	fmt.Println("Usage: make -n migrationName -t tableName")
 }

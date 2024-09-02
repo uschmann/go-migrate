@@ -1,4 +1,3 @@
-whenever sqlerror exit sql.sqlcode;
 
 DROP TABLE {{ .name }};
 

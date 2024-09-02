@@ -1,0 +1,21 @@
+{
+    "sqltools.connections": [
+        {
+            "oracleOptions": {
+                "privilege": "Normal",
+                "thickMode": false,
+                "autoCommit": false,
+                "lowerCase": false,
+                "limitPrefetchRows": false
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 1522,
+            "driver": "Oracle",
+            "name": "FREE",
+            "database": "FREE",
+            "username": "auschmann",
+            "password": "secret"
+        }
+    ]
+}

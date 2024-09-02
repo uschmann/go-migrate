@@ -1,4 +1,3 @@
-whenever sqlerror exit sql.sqlcode;
 
 create table {{ .name }} (
     id number(19, 0) not null,

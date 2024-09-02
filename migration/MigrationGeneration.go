@@ -31,7 +31,7 @@ func generatePrefix() string {
 	return time.Now().Format("2006_01_02_150405_")
 }
 
-func GenerateMigration(migrationDir string, name string) {
+func GenerateMigration(migrationDir string, name string) string {
 	timestamp := generatePrefix()
 
 	folderPath := path.Join(migrationDir, timestamp+name)
@@ -48,9 +48,11 @@ func GenerateMigration(migrationDir string, name string) {
 	f, err = os.Create(downPath)
 	check(err)
 	defer f.Close()
+
+	return folderPath
 }
 
-func GenerateMigrationWithTemplate(migrationDir string, name string, table string) {
+func GenerateMigrationWithTemplate(migrationDir string, name string, table string) string {
 	timestamp := generatePrefix()
 
 	folderPath := path.Join(migrationDir, timestamp+name)
@@ -65,4 +67,6 @@ func GenerateMigrationWithTemplate(migrationDir string, name string, table strin
 
 	err = os.WriteFile(downPath, []byte(formatSqlTemplate(downTemplate, table)), os.ModePerm)
 	check(err)
+
+	return folderPath
 }

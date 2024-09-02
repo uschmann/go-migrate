@@ -1,5 +1,5 @@
 whenever sqlerror exit sql.sqlcode;
-WHENEVER OSERROR EXIT 68;
+WHENEVER OSERROR EXIT 1;
 
 @&1
 
