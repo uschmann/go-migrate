@@ -25,18 +25,18 @@ func MakeMigration(dir string) *Migration {
 	return migration
 }
 
-func fileExists(filename string) bool {
-	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
-		return false
-	} else {
-		return true
-	}
-}
-
 func (m *Migration) GetUpFilename() string {
 	return path.Join(m.directory, "up.sql")
 }
 
 func (m *Migration) GetDownFilename() string {
 	return path.Join(m.directory, "up.sql")
+}
+
+func fileExists(filename string) bool {
+	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
+		return false
+	} else {
+		return true
+	}
 }

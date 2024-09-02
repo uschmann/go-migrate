@@ -35,6 +35,14 @@
             "mode": "debug",
             "program": "main.go",
             "args": ["make", "-n", "create_foo_table", "-t", "foo"]
+        },
+        {
+            "name": "Launch test",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "args": ["test"]
         }
     ]
 }

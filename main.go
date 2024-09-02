@@ -26,7 +26,6 @@ func main() {
 				Destination: &directory,
 			},
 		},
-
 		Commands: []*cli.Command{
 			{
 				Name:  "status",
@@ -118,6 +117,15 @@ func main() {
 
 					fmt.Println("Created new migration in", folder)
 
+					return nil
+				},
+			},
+			{
+				Name:  "test",
+				Usage: "Test configuration and print results",
+				Action: func(ctx *cli.Context) error {
+					config := migration.MakeConfig()
+					fmt.Println(config.Database.Host)
 					return nil
 				},
 			},
