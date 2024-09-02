@@ -37,7 +37,7 @@ func main() {
 						panic(err)
 					}
 
-					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationStatus := migrationService.GetMigrationStatus()
@@ -64,7 +64,7 @@ func main() {
 						panic(err)
 					}
 
-					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationService.Up()
@@ -82,7 +82,7 @@ func main() {
 						panic(err)
 					}
 
-					migrationLogRepository := migration.NewMigrationLogRepository(connection)
+					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
 					migrationService.Down()

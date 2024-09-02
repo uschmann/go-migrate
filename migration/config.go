@@ -2,7 +2,6 @@ package migration
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
@@ -19,18 +18,12 @@ type DatabaseConfig struct {
 }
 
 type Config struct {
-	Database DatabaseConfig
-}
-
-func readDotEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	MigrationLogTable string
+	Database          DatabaseConfig
 }
 
 func MakeConfig() *Config {
-	readDotEnv()
+	godotenv.Load()
 
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
@@ -38,7 +31,13 @@ func MakeConfig() *Config {
 	port, _ := strconv.Atoi(os.Getenv("DB_PORT"))
 	service := os.Getenv("DB_SERVICE")
 
+	migrationLogTable := os.Getenv("DB_MIGRATION_LOG_TABLE")
+	if migrationLogTable == "" {
+		migrationLogTable = "MIGRATION_LOGS"
+	}
+
 	return &Config{
+		MigrationLogTable: migrationLogTable,
 		Database: DatabaseConfig{
 			User:     user,
 			Password: password,
@@ -55,5 +54,4 @@ func (d *DatabaseConfig) BuildUrl() string {
 
 func (d *DatabaseConfig) BuildSqlplusConnectionString() string {
 	return fmt.Sprintf("%s/%s@%s:%d/%s", d.User, d.Password, d.Host, d.Port, d.Service)
-	//return "auschmann/secret@localhost:1522/FREE"
 }

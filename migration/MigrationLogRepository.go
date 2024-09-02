@@ -12,17 +12,19 @@ type MigrationLog struct {
 
 type MigrationLogRepository struct {
 	connection *sql.DB
+	config     *Config
 }
 
-func NewMigrationLogRepository(connection *sql.DB) *MigrationLogRepository {
+func NewMigrationLogRepository(connection *sql.DB, config *Config) *MigrationLogRepository {
 	return &MigrationLogRepository{
 		connection: connection,
+		config:     config,
 	}
 }
 
 func (m *MigrationLogRepository) MigrationLogsTableExists() bool {
 
-	_, err := m.connection.Query("Select COUNT(*) FROM MIGRATION_LOGS")
+	_, err := m.connection.Query("Select COUNT(*) FROM " + m.config.MigrationLogTable)
 
 	if err != nil {
 		return false
@@ -36,7 +38,7 @@ func (m *MigrationLogRepository) CreateMigrationLogsTable() (bool, error) {
 		return false, nil
 	}
 
-	ddl := `CREATE TABLE MIGRATION_LOGS (
+	ddl := `CREATE TABLE ` + m.config.MigrationLogTable + ` (
 				ID NUMBER(6,0) GENERATED ALWAYS AS IDENTITY,
 				NAME VARCHAR2(256) NOT NULL,
 				BATCH NUMBER(6,0) NOT NULL,
@@ -54,20 +56,20 @@ func (m *MigrationLogRepository) CreateMigrationLogsTable() (bool, error) {
 }
 
 func (m *MigrationLogRepository) AddMigrationLog(name string, batch int) (sql.Result, error) {
-	return m.connection.Exec("insert into migration_logs (name, batch) values (:1, :2)", name, batch)
+	return m.connection.Exec("insert into "+m.config.MigrationLogTable+" (name, batch) values (:1, :2)", name, batch)
 }
 
 func (m *MigrationLogRepository) DeleteMigrationLogById(id int) (sql.Result, error) {
-	return m.connection.Exec("delete from migration_logs where id = :1", id)
+	return m.connection.Exec("delete from "+m.config.MigrationLogTable+" where id = :1", id)
 }
 
 func (m *MigrationLogRepository) DeleteMigrationLogByName(name string) (sql.Result, error) {
-	return m.connection.Exec("delete from migration_logs where name = :1", name)
+	return m.connection.Exec("delete from "+m.config.MigrationLogTable+" where name = :1", name)
 }
 
 func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 	var batch int
-	err := m.connection.QueryRow("select nvl(max(batch), 0) from migration_logs").Scan(&batch)
+	err := m.connection.QueryRow("select nvl(max(batch), 0) from " + m.config.MigrationLogTable).Scan(&batch)
 
 	if err != nil {
 		return -1, err
@@ -77,7 +79,7 @@ func (m *MigrationLogRepository) GetHighestBatch() (int, error) {
 }
 
 func (m *MigrationLogRepository) GetAllMigrationLogs() ([]MigrationLog, error) {
-	rows, err := m.connection.Query("SELECT ID, NAME, BATCH FROM migration_logs ORDER BY NAME ASC, BATCH ASC")
+	rows, err := m.connection.Query("SELECT ID, NAME, BATCH FROM " + m.config.MigrationLogTable + " ORDER BY NAME ASC, BATCH ASC")
 
 	if err != nil {
 		return nil, err
@@ -103,7 +105,7 @@ func (m *MigrationLogRepository) GetAllMigrationLogs() ([]MigrationLog, error) {
 
 func (m *MigrationLogRepository) IsMigrationExecuted(name string) (bool, error) {
 	var count int
-	err := m.connection.QueryRow("select count(*) from migration_logs where name = :1", name).Scan(&count)
+	err := m.connection.QueryRow("select count(*) from "+m.config.MigrationLogTable+" where name = :1", name).Scan(&count)
 
 	if err != nil {
 		return false, err
@@ -116,7 +118,7 @@ func (m *MigrationLogRepository) GetMigrationLogsToRollback() ([]string, error) 
 	batch, err := m.GetHighestBatch()
 	check(err)
 
-	rows, err := m.connection.Query("SELECT NAME FROM migration_logs WHERE BATCH = :1 ORDER BY NAME DESC", batch)
+	rows, err := m.connection.Query("SELECT NAME FROM "+m.config.MigrationLogTable+" WHERE BATCH = :1 ORDER BY NAME DESC", batch)
 
 	if err != nil {
 		return nil, err
