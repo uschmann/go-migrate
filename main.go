@@ -40,6 +40,8 @@ func main() {
 					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
+					migrationLogRepository.CreateMigrationLogsTable()
+
 					migrationStatus := migrationService.GetMigrationStatus()
 
 					fmt.Println("\tName\t\t\t\t\t\tExecuted?\tBatch")
@@ -67,6 +69,7 @@ func main() {
 					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
+					migrationLogRepository.CreateMigrationLogsTable()
 					migrationService.Up()
 
 					return nil
@@ -85,6 +88,7 @@ func main() {
 					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
 					migrationService := migration.MakeMigrationService(directory, config, migrationLogRepository)
 
+					migrationLogRepository.CreateMigrationLogsTable()
 					migrationService.Down()
 
 					return nil

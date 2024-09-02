@@ -78,7 +78,7 @@ func (m *MigrationService) Up() {
 			fmt.Println("Migrating " + migration.Name)
 
 			tempDir := copyMigrationToTemp(migration)
-			//defer os.RemoveAll(tempDir)
+			defer os.RemoveAll(tempDir)
 
 			stdout, stderr, err := execute(m.config, path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "up.sql"))
 
@@ -109,6 +109,7 @@ func (m *MigrationService) Down() {
 			fmt.Println("Rolling back " + migration.Name)
 
 			tempDir := copyMigrationToTemp(migration)
+			defer os.RemoveAll(tempDir)
 
 			stdout, _, err := execute(m.config, path.Join(tempDir, "wrapper.sql"), path.Join(tempDir, "down.sql"))
 

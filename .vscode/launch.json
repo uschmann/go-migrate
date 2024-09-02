@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch up",
+            "name": "Launch migrate",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -13,7 +13,7 @@
             "args": ["migrate"]
         },
         {
-            "name": "Launch down",
+            "name": "Launch rollback",
             "type": "go",
             "request": "launch",
             "mode": "debug",
