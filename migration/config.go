@@ -19,6 +19,7 @@ type DatabaseConfig struct {
 
 type Config struct {
 	MigrationLogTable string
+	Sqlplus           string
 	Database          DatabaseConfig
 }
 
@@ -36,8 +37,14 @@ func MakeConfig() *Config {
 		migrationLogTable = "MIGRATION_LOGS"
 	}
 
+	sqlplus := os.Getenv("SQLPLUS_BIN")
+	if sqlplus == "" {
+		sqlplus = "sqlplus"
+	}
+
 	return &Config{
 		MigrationLogTable: migrationLogTable,
+		Sqlplus:           sqlplus,
 		Database: DatabaseConfig{
 			User:     user,
 			Password: password,

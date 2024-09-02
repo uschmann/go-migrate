@@ -20,7 +20,7 @@ func execute(config *Config, wrapper string, script string) (string, string, err
 	var stderr bytes.Buffer
 
 	connectionString := config.Database.BuildSqlplusConnectionString()
-	cmd := exec.Command("sqlplus", connectionString, "@"+wrapper, script)
+	cmd := exec.Command(config.Sqlplus, connectionString, "@"+wrapper, script)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
