@@ -23,6 +23,10 @@ func execute(config *Config, wrapper string, script string) (string, string, err
 	cmd := exec.Command(config.Sqlplus, connectionString, "@"+wrapper, script)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+
+	// Todo: Unset http_proxy
+	// https://stackoverflow.com/questions/41133115/pass-env-var-to-exec-command
+
 	err := cmd.Run()
 	return stdout.String(), stderr.String(), err
 }

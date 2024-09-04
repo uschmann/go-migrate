@@ -133,6 +133,7 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					config := migration.MakeConfig()
 					fmt.Println(config.Database.Host)
+
 					return nil
 				},
 			},
