@@ -22,6 +22,17 @@ func NewMigrationLogRepository(connection *sql.DB, config *Config) *MigrationLog
 	}
 }
 
+func (m *MigrationLogRepository) TestConnection() error {
+
+	_, err := m.connection.Query("SELECT 42 FROM DUAL")
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *MigrationLogRepository) MigrationLogsTableExists() bool {
 
 	_, err := m.connection.Query("Select COUNT(*) FROM " + m.config.MigrationLogTable)

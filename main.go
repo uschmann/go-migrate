@@ -135,7 +135,8 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					config := migration.MakeConfig()
 
-					pterm.DefaultBasicText.Println("Configuration:")
+					// Print configuration
+					pterm.DefaultBasicText.Print(pterm.LightCyan("Printing configuration:\n"))
 					databaseTableData := pterm.TableData{
 						{"Name", "Value"},
 						{pterm.LightMagenta("Database"), ""},
@@ -149,6 +150,37 @@ func main() {
 						{"SQLPLUS_BIN", config.Sqlplus},
 					}
 					pterm.DefaultTable.WithHasHeader().WithData(databaseTableData).Render()
+
+					pterm.DefaultBasicText.Print(pterm.LightCyan("Check sqlplus:\n") + "Running " + pterm.LightMagenta(config.Sqlplus+" -v") + "\n")
+
+					sqlPLusVersion, stderr, err := migration.GetSqlplusVersion(config)
+					if err != nil {
+						pterm.DefaultBasicText.Println(stderr)
+						panic(err)
+					}
+
+					pterm.DefaultBasicText.Println(sqlPLusVersion)
+
+					// Connect to database
+
+					pterm.DefaultBasicText.Print(pterm.LightCyan("Checking database connection:\n"))
+					connection, err := migration.ConnectToDatabase(config)
+					if err != nil {
+						panic(err)
+					}
+					migrationLogRepository := migration.NewMigrationLogRepository(connection, config)
+
+					err = migrationLogRepository.TestConnection()
+					if err != nil {
+						panic(err)
+					}
+					pterm.DefaultBasicText.Print(pterm.White("Database conenction with go-ora was " + pterm.Green("successfull\n")))
+
+					if migrationLogRepository.MigrationLogsTableExists() {
+						pterm.DefaultBasicText.Println(config.MigrationLogTable + " table " + pterm.Green("exists"))
+					} else {
+						pterm.DefaultBasicText.Println(config.MigrationLogTable + " table " + pterm.Red("does not exist"))
+					}
 
 					return nil
 				},

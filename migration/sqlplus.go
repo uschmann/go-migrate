@@ -15,6 +15,18 @@ import (
 //go:embed templates/wrapper.sql
 var wrapperScript string
 
+func GetSqlplusVersion(config *Config) (string, string, error) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	cmd := exec.Command(config.Sqlplus, "-v")
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	return stdout.String(), stderr.String(), err
+}
+
 func execute(config *Config, wrapper string, script string) (string, string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
