@@ -46,15 +46,30 @@ func main() {
 
 					migrationStatus := migrationService.GetMigrationStatus()
 
-					fmt.Println("\tName\t\t\t\t\t\tExecuted?\tBatch")
+					tableData := pterm.TableData{
+						{"#", "Name", "Executed", "Batch"},
+					}
+
 					for _, status := range migrationStatus {
-						isExecuted := "No"
+						isExecuted := pterm.Red("No")
 						if status.IsExecuted {
-							isExecuted = "Yes"
+							isExecuted = pterm.Green("Yes")
 						}
 
-						fmt.Println(status.Index, "\t"+status.Migration.Name+"\t\t", isExecuted, "\t\t", status.Batch)
+						batch := strconv.Itoa(status.Batch)
+						if batch == "0" {
+							batch = "-"
+						}
+
+						tableData = append(tableData, []string{
+							strconv.Itoa(status.Index),
+							status.Migration.Name,
+							isExecuted,
+							batch,
+						})
 					}
+					pterm.DefaultTable.WithHasHeader().WithData(tableData).Render()
+
 					return nil
 				},
 			},
@@ -160,6 +175,8 @@ func main() {
 					}
 
 					pterm.DefaultBasicText.Println(sqlPLusVersion)
+
+					pterm.DefaultBasicText.Println(pterm.White("sqlplus was executed " + pterm.Green("successfully\n")))
 
 					// Connect to database
 
