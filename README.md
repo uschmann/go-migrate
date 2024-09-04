@@ -28,7 +28,7 @@ GLOBAL OPTIONS:
 
 Configuration is done using OS environment variables.
 
-**dbmigrate** tries to read a .env file from the current working direcoty when started.
+**dbmigrate** tries to read an .env file from the current working directory when started.
 
 ```bash
 DB_USER=auschmann
