@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
+	"github.com/pterm/pterm"
 	"github.com/urfave/cli/v2"
 	"github.com/uschmann/go-migrate/migration"
 )
@@ -132,7 +134,21 @@ func main() {
 				Usage: "Test configuration and print results",
 				Action: func(ctx *cli.Context) error {
 					config := migration.MakeConfig()
-					fmt.Println(config.Database.Host)
+
+					pterm.DefaultBasicText.Println("Configuration:")
+					databaseTableData := pterm.TableData{
+						{"Name", "Value"},
+						{pterm.LightMagenta("Database"), ""},
+						{"DB_USER", config.Database.User},
+						{"DB_PASSWORD", "*****"},
+						{"DB_HOST", config.Database.Host},
+						{"DB_PORT", strconv.Itoa(config.Database.Port)},
+						{"DB_SERVICE", config.Database.Service},
+						{pterm.LightMagenta("Misc"), ""},
+						{"DB_MIGRATION_LOG_TABLE", config.MigrationLogTable},
+						{"SQLPLUS_BIN", config.Sqlplus},
+					}
+					pterm.DefaultTable.WithHasHeader().WithData(databaseTableData).Render()
 
 					return nil
 				},
