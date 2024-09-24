@@ -13,7 +13,7 @@ build:
     paths: ['dbmigrate', 'dbmigrate.exe']
 
 build-docker:
-  stage: build-docker
+  stage: build
   only:
     refs:
       - tags
