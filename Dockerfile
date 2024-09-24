@@ -16,7 +16,7 @@ ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_21_4
 ENV PATH=$LD_LIBRARY_PATH:$PATH
 
 WORKDIR /app
-COPY --exclude=.env . /app
+COPY --exclude=.env --exclude=./sql . /app
 
 # Build the Go application inside the container
 RUN go build -o dbmigrate
