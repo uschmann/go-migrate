@@ -19,7 +19,7 @@ WORKDIR /app
 COPY --exclude=.env --exclude=./sql . /app
 
 # Build the Go application inside the container
-RUN go build -o dbmigrate
+RUN go build -o /bin/dbmigrate
 
 # Define the command to run your application
-ENTRYPOINT ["./dbmigrate"]
+ENTRYPOINT ["dbmigrate"]
