@@ -1,0 +1,13 @@
+build:
+  image: golang:latest
+  stage: build
+  tags:
+      - dind
+  only:
+      - tags
+  script:
+    - go build -o dbmigrate
+    - GOOS=windows go build -o dbmigrate.exe 
+  artifacts:
+    name: 'dbmigrate_$CI_COMMIT_TAG'
+    paths: ['dbmigrate', 'dbmigrate.exe']
